@@ -27,7 +27,6 @@ ultimate_timeflag = False
 ultimate_countdown = pygame.time.Clock()
 
 
-
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
 
@@ -49,9 +48,15 @@ def load_image(name, colorkey=None):
     return image
 
 
-background = pygame.image.load('data/nebo.jpg').convert()
-background = pygame.transform.smoothscale(background,
-                                          screen.get_size())
+class Background(pygame.sprite.Sprite):
+    image = load_image('nebo.jpg')
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = Background.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
 
 
 class Player(pygame.sprite.Sprite):
@@ -64,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 70
         self.ammo = 10
-        self.hp = 100
+        self.hp = 10000
         self.count = 0
         self.speedx = 0
 
@@ -159,17 +164,17 @@ class Heals(pygame.sprite.Sprite):
         self.rect.y = random.randrange(100, HEIGHT - 150)
 
 
-
-
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 ammos = pygame.sprite.Group()
 heals = pygame.sprite.Group()
+background = Background()
 player = Player()
 players = pygame.sprite.Group()
 players.add(player)
 all_sprites.add(player)
+all_sprites.add(background)
 
 
 def draw():
@@ -212,7 +217,6 @@ for i in range(8):
 # Цикл игры
 running = True
 while running:
-    screen.blit(background, (0, 0))
     # Держим цикл на правильной скорости
     clock.tick(FPS)
     # Ввод процесса (события)
@@ -265,15 +269,16 @@ while running:
     if hits:
         player.hp += 20
 
-
     if player.hp <= 0:
         running = False
 
     # Рендеринг
     screen.fill((0, 0, 0))
-    draw()
+
 
     all_sprites.draw(screen)
+    players.draw(screen)
+    draw()
     # После отрисовки всего, переворачиваем экран
     pygame.display.flip()
     # Проверка, не ударил ли моб игрока
