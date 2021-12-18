@@ -14,17 +14,23 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Самолёты")
 clock = pygame.time.Clock()
 
-ammo_event = pygame.USEREVENT + 1
-pygame.time.set_timer(ammo_event, 10000)
 
-heal_event = pygame.USEREVENT + 2
-pygame.time.set_timer(heal_event, 20000)
+seconds_counter_event = pygame.USEREVENT + 4
+pygame.time.set_timer(seconds_counter_event, 1000)
 
-ultimate_event = pygame.USEREVENT + 3
-pygame.time.set_timer(ultimate_event, 30000)
+seconds_counter = 0
+ultimate_countdown = 0
+ultimate_timer = 0
+special_countdown = 0
+heal_counter = 0
+ammo_counter = 0
+
 ultimate_flag = False
 ultimate_timeflag = False
-ultimate_countdown = pygame.time.Clock()
+
+special_flag = False
+special_timeflag = False
+shoots_counter = 0
 
 
 def load_image(name, colorkey=None):
@@ -101,8 +107,13 @@ class Player(pygame.sprite.Sprite):
             bullet = Bullet(self.rect.centerx, self.rect.top)
             all_sprites.add(bullet)
             bullets.add(bullet)
-            if not ultimate_flag:
-                self.ammo -= 1
+            self.ammo -= 1
+
+    def special_shoot(self):
+        bullet = Bullet(self.rect.centerx, self.rect.top)
+        all_sprites.add(bullet)
+        bullets.add(bullet)
+
 
 
 class Mob(pygame.sprite.Sprite):
@@ -224,32 +235,65 @@ while running:
         # проверка для закрытия окна
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.shoot()
-        if event.type == ammo_event:
-            if not ammos:
-                am = Ammos()
-                all_sprites.add(am)
-                ammos.add(am)
-        if event.type == heal_event:
-            if not heals:
-                he = Heals()
-                all_sprites.add(he)
-                heals.add(he)
-        if event.type == ultimate_event:
-            ultimate_timeflag = True
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_0:
+            if event.key == pygame.K_q and ultimate_timeflag:
                 ultimate_flag = True
-                ultimate_countdown = pygame.time.Clock()
+                ultimate_timeflag = False
+            if event.key == pygame.K_e and special_timeflag:
+                special_flag = True
+        if event.type == seconds_counter_event:
+            seconds_counter += 1
+            if not ultimate_timeflag:
+                ultimate_countdown += 1
+            if ultimate_flag:
+                ultimate_timer += 1
+            if not special_timeflag:
+                special_countdown += 1
+            ammo_counter += 1
+            heal_counter += 1
 
-    if ultimate_countdown.get_time() >= 10000:
-        ultimate_flag = False
+    if ultimate_countdown % 30 == 0 and ultimate_countdown != 0:
+        ultimate_timeflag = True
+        ultimate_countdown = 0
+        print(1)
 
     if ultimate_flag:
-        for i in range(10):
-            player.shoot()
+        player.special_shoot()
+
+    if ultimate_timer % 10 == 0 and ultimate_timer != 0:
+        ultimate_timer = 0
+        ultimate_flag = False
+
+    if special_countdown % 10 == 0 and special_countdown != 0:
+        special_timeflag = True
+        special_countdown = 0
+        print(2)
+
+    if special_flag:
+        player.special_shoot()
+        if shoots_counter < 3:
+            player.special_shoot()
+            shoots_counter += 1
+        else:
+            shoots_counter = 0
+            special_flag = False
+        special_timeflag = False
+
+    if ammo_counter % 10 == 0 and ammo_counter != 0:
+        if not ammos:
+            am = Ammos()
+            all_sprites.add(am)
+            ammos.add(am)
+
+    if heal_counter % 20 == 0 and heal_counter != 0:
+        if not heals:
+            he = Heals()
+            all_sprites.add(he)
+            heals.add(he)
+
+
 
     # Обновление
     all_sprites.update()
@@ -264,10 +308,12 @@ while running:
     hits = pygame.sprite.groupcollide(players, ammos, False, True)
     if hits:
         player.ammo += 10
+        ammo_counter = 0
 
     hits = pygame.sprite.groupcollide(players, heals, False, True)
     if hits:
         player.hp += 20
+        heal_counter = 0
 
     if player.hp <= 0:
         running = False
