@@ -191,11 +191,15 @@ all_sprites.add(background)
 
 
 def draw():
+    global text_ult, text_spec
+    pygame.draw.rect(screen, 'black', [(0, 600), (WIDTH, HEIGHT)], 0)
+
     font = pygame.font.Font(None, 20)
     text = font.render("Снаряды", True, (255, 204, 0))
     text_x = 10
     text_y = 600
     screen.blit(text, (text_x, text_y))
+
 
     text_ammo = font.render(str(player.ammo), True, (255, 204, 0))
     text_y += 30
@@ -203,7 +207,7 @@ def draw():
 
     font = pygame.font.Font(None, 20)
     text = font.render("Здоровье", True, (255, 204, 0))
-    text_x = 100
+    text_x = 200
     text_y = 600
     screen.blit(text, (text_x, text_y))
 
@@ -213,13 +217,57 @@ def draw():
 
     font = pygame.font.Font(None, 20)
     text = font.render("Счёт", True, (255, 204, 0))
-    text_x = 200
+    text_x = 400
     text_y = 600
     screen.blit(text, (text_x, text_y))
 
     text_ammo = font.render(str(player.count), True, (255, 204, 0))
     text_y += 30
     screen.blit(text_ammo, (text_x, text_y))
+
+    if ultimate_timeflag or ultimate_flag:
+        ult_color = (0, 255, 0)
+    else:
+        ult_color = (255, 0, 0)
+
+    font = pygame.font.Font(None, 20)
+    text = font.render("Ультимативная способность", True, ult_color)
+    text_x = 10
+    text_y = 650
+    screen.blit(text, (text_x, text_y))
+
+    if ultimate_timeflag:
+        text_ult = 'Пуск!'
+    else:
+        if not ultimate_timeflag and not ultimate_flag:
+            text_ult = f'{30 - ultimate_countdown}'
+        if ultimate_flag:
+            text_ult = f'{10 - ultimate_timer}'
+
+    text_ult = font.render(str(text_ult), True, ult_color)
+    text_y += 30
+    screen.blit(text_ult, (text_x, text_y))
+
+    if special_timeflag:
+        spec_color = (0, 255, 0)
+    else:
+        spec_color = (255, 0, 0)
+
+    font = pygame.font.Font(None, 20)
+    text = font.render("Специальная способность", True, spec_color)
+    text_x = 275
+    text_y = 650
+    screen.blit(text, (text_x, text_y))
+
+    if special_timeflag:
+        text_spec = 'Пуск!'
+    else:
+        if not special_timeflag:
+            text_spec = f'{10 - special_countdown}'
+
+    text_spec = font.render(str(text_spec), True, spec_color)
+    text_y += 30
+    screen.blit(text_spec, (text_x, text_y))
 
 
 for i in range(8):
@@ -247,7 +295,7 @@ while running:
                 special_flag = True
         if event.type == seconds_counter_event:
             seconds_counter += 1
-            if not ultimate_timeflag:
+            if not ultimate_timeflag and not ultimate_flag:
                 ultimate_countdown += 1
             if ultimate_flag:
                 ultimate_timer += 1
