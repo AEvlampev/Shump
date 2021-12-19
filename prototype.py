@@ -65,7 +65,8 @@ class Background(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    image = load_image('player_plane3.jpg', -1)
+    image = load_image('player_plane.png', -1)
+    image = pygame.transform.scale(image, (75, 75))
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -115,7 +116,8 @@ class Player(pygame.sprite.Sprite):
 
 
 class Mob(pygame.sprite.Sprite):
-    image = load_image('enemy_mob_plane.jpg', -1)
+    image = load_image('mob_plane.png', -1)
+    image = pygame.transform.scale(image, (75, 75))
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -137,7 +139,8 @@ class Mob(pygame.sprite.Sprite):
 
 
 class Bullet(pygame.sprite.Sprite):
-    image = load_image('bullet.jpg', -1)
+    image = load_image('bullet3.png', -1)
+    image = pygame.transform.scale(image, (20, 40))
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -154,7 +157,8 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class Ammos(pygame.sprite.Sprite):
-    image = load_image('ammo.jpg', -1)
+    image = load_image('ammo.png', -1)
+    image = pygame.transform.scale(image, (50, 50))
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -166,7 +170,9 @@ class Ammos(pygame.sprite.Sprite):
 
 
 class Heals(pygame.sprite.Sprite):
-    image = load_image('heal.jpg', -1)
+    image = load_image('heal1.png', -1)
+    image = pygame.transform.scale(image, (50, 50))
+
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -245,6 +251,7 @@ def draw():
             text_ult = f'{10 - ultimate_timer}'
 
     text_ult = font.render(str(text_ult), True, ult_color)
+    text_x += 75
     text_y += 30
     screen.blit(text_ult, (text_x, text_y))
 
@@ -266,6 +273,7 @@ def draw():
             text_spec = f'{10 - special_countdown}'
 
     text_spec = font.render(str(text_spec), True, spec_color)
+    text_x += 75
     text_y += 30
     screen.blit(text_spec, (text_x, text_y))
 
@@ -321,7 +329,7 @@ while running:
 
     if special_flag:
         player.special_shoot()
-        if shoots_counter < 3:
+        if shoots_counter < 2:
             player.special_shoot()
             shoots_counter += 1
         else:
