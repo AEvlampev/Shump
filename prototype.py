@@ -307,7 +307,6 @@ while running:
     if ultimate_countdown % 30 == 0 and ultimate_countdown != 0:
         ultimate_timeflag = True
         ultimate_countdown = 0
-        print(1)
 
     if ultimate_flag:
         player.special_shoot()
@@ -319,7 +318,6 @@ while running:
     if special_countdown % 10 == 0 and special_countdown != 0:
         special_timeflag = True
         special_countdown = 0
-        print(2)
 
     if special_flag:
         player.special_shoot()
