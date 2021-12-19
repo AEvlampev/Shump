@@ -14,7 +14,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Самолёты")
 clock = pygame.time.Clock()
 
-
 seconds_counter_event = pygame.USEREVENT + 4
 pygame.time.set_timer(seconds_counter_event, 1000)
 
@@ -115,7 +114,6 @@ class Player(pygame.sprite.Sprite):
         bullets.add(bullet)
 
 
-
 class Mob(pygame.sprite.Sprite):
     image = load_image('enemy_mob_plane.jpg', -1)
 
@@ -162,7 +160,9 @@ class Ammos(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
-        self.rect.y = random.randrange(100, HEIGHT - 150)
+        self.rect.y = random.randrange(self.rect.height,
+                                       HEIGHT - 150 -
+                                       self.rect.height)
 
 
 class Heals(pygame.sprite.Sprite):
@@ -172,7 +172,9 @@ class Heals(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
-        self.rect.y = random.randrange(100, HEIGHT - 150)
+        self.rect.y = random.randrange(self.rect.height,
+                                       HEIGHT - 150 -
+                                       self.rect.height)
 
 
 all_sprites = pygame.sprite.Group()
@@ -293,8 +295,6 @@ while running:
             all_sprites.add(he)
             heals.add(he)
 
-
-
     # Обновление
     all_sprites.update()
 
@@ -320,7 +320,6 @@ while running:
 
     # Рендеринг
     screen.fill((0, 0, 0))
-
 
     all_sprites.draw(screen)
     players.draw(screen)
