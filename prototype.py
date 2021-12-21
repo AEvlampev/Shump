@@ -17,7 +17,7 @@ clock = pygame.time.Clock()
 seconds_counter_event = pygame.USEREVENT + 4
 pygame.time.set_timer(seconds_counter_event, 1000)
 
-seconds_counter = 0
+seconds_counter = 110
 ultimate_countdown = 0
 ultimate_timer = 0
 special_countdown = 0
@@ -30,6 +30,10 @@ ultimate_timeflag = False
 special_flag = False
 special_timeflag = False
 shoots_counter = 0
+
+boss_flag = False
+boss_ap = False
+flag_enemy_shoot = False
 
 
 def load_image(name, colorkey=None):
@@ -78,6 +82,7 @@ class Player(pygame.sprite.Sprite):
         self.hp = 10000
         self.count = 0
         self.speedx = 0
+        self.speedy = 0
 
     def update(self):
         self.speedx = 0
@@ -130,7 +135,8 @@ class Mob(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.speedx
         self.rect.y += self.speedy
-        if self.rect.top > HEIGHT + 10 or self.rect.left < -25 or self.rect.right > WIDTH + 20:
+        if self.rect.top > HEIGHT + 10 or \
+                self.rect.left < -25 or self.rect.right > WIDTH + 20:
             self.rect.x = random.randrange(WIDTH - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(1, 8)
@@ -156,6 +162,24 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 
+class EnemyBullet(pygame.sprite.Sprite):
+    image = load_image('enemy_bullet.png', -1)
+    image = pygame.transform.scale(image, (54, 100))
+
+    def __init__(self, x):
+        pygame.sprite.Sprite.__init__(self)
+        self.rect = self.image.get_rect()
+        self.rect.bottom = 240
+        self.rect.centerx = x
+        self.speedy = 10
+
+    def update(self):
+        self.rect.y += self.speedy
+        # убить, если он заходит за нижнюю часть экрана
+        if self.rect.bottom >= 550:
+            self.kill()
+
+
 class Ammos(pygame.sprite.Sprite):
     image = load_image('ammo.png', -1)
     image = pygame.transform.scale(image, (50, 50))
@@ -173,7 +197,6 @@ class Heals(pygame.sprite.Sprite):
     image = load_image('heal1.png', -1)
     image = pygame.transform.scale(image, (50, 50))
 
-
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.rect = self.image.get_rect()
@@ -183,21 +206,41 @@ class Heals(pygame.sprite.Sprite):
                                        self.rect.height)
 
 
+class Boss(pygame.sprite.Sprite):
+    image = load_image('boss.png', -1)
+    image = pygame.transform.scale(image, (480, 230))
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
+        self.hp = 1000
+
+    def update(self):
+        if self.hp <= 0:
+            self.kill()
+
+
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 ammos = pygame.sprite.Group()
 heals = pygame.sprite.Group()
+bosses = pygame.sprite.Group()
+enemy_bullets = pygame.sprite.Group()
+
 background = Background()
+
 player = Player()
 players = pygame.sprite.Group()
 players.add(player)
+
 all_sprites.add(player)
 all_sprites.add(background)
 
 
 def draw():
-    global text_ult, text_spec
     pygame.draw.rect(screen, 'black', [(0, 600), (WIDTH, HEIGHT)], 0)
 
     font = pygame.font.Font(None, 20)
@@ -205,7 +248,6 @@ def draw():
     text_x = 10
     text_y = 600
     screen.blit(text, (text_x, text_y))
-
 
     text_ammo = font.render(str(player.ammo), True, (255, 204, 0))
     text_y += 30
@@ -311,6 +353,7 @@ while running:
                 special_countdown += 1
             ammo_counter += 1
             heal_counter += 1
+            flag_enemy_shoot = True
 
     if ultimate_countdown % 30 == 0 and ultimate_countdown != 0:
         ultimate_timeflag = True
@@ -349,6 +392,29 @@ while running:
             all_sprites.add(he)
             heals.add(he)
 
+    if seconds_counter >= 120:
+        for mob in mobs:
+            mob.kill()
+        for obj in all_sprites:
+            if isinstance(obj, Mob):
+                obj.kill()
+        if not bosses and not boss_ap:
+            boss = Boss()
+            all_sprites.add(boss)
+            bosses.add(boss)
+            boss_ap = True
+
+    if seconds_counter % 10 == 0 and boss_ap and flag_enemy_shoot:
+        if boss.hp > 0:
+            xb = 0
+            for i in range(3):
+                enemy_bullet = EnemyBullet(xb)
+                all_sprites.add(enemy_bullet)
+                enemy_bullets.add(enemy_bullet)
+                xb += 240
+            xb = 0
+            flag_enemy_shoot = False
+
     # Обновление
     all_sprites.update()
 
@@ -372,6 +438,22 @@ while running:
     if player.hp <= 0:
         running = False
 
+    hits = pygame.sprite.groupcollide(bosses, bullets, False, True)
+    if hits:
+        boss.hp -= 20
+        player.count += 20
+
+    hits = pygame.sprite.groupcollide(players, enemy_bullets,
+                                      False, True)
+    if hits:
+        player.hp -= 20
+
+    hits = pygame.sprite.groupcollide(players, bosses, False, False)
+    if hits:
+        player.hp -= 1
+        boss.hp -= 5
+        player.count += 5
+
     # Рендеринг
     screen.fill((0, 0, 0))
 
@@ -385,7 +467,7 @@ while running:
     if hits:
         player.hp -= 20
 
-    if not mobs:
+    if not mobs and not boss_flag:
         for i in range(5):
             m = Mob()
             all_sprites.add(m)
