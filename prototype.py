@@ -1,5 +1,6 @@
 import os
 import random
+import sys
 
 import pygame
 
@@ -17,7 +18,7 @@ clock = pygame.time.Clock()
 seconds_counter_event = pygame.USEREVENT + 4
 pygame.time.set_timer(seconds_counter_event, 1000)
 
-seconds_counter = 110
+seconds_counter = 0
 ultimate_countdown = 0
 ultimate_timer = 0
 special_countdown = 0
@@ -221,6 +222,59 @@ class Boss(pygame.sprite.Sprite):
         if self.hp <= 0:
             self.kill()
 
+
+screen.fill('black')
+
+font = pygame.font.Font(None, 70)
+game_name = font.render('Shump!', True, (255, 204, 0))
+screen.blit(game_name, (150, 50))
+
+intro_text = ['    В одной далёкой-далёкой галактике идёт война    ',
+              'Вы отправились на фронт в качестве пилота космолёта.',
+              'Сражайтесь с противником до самого конца и победите!']
+
+font = pygame.font.Font(None, 24)
+text_x = 10
+text_y = 150
+for line in intro_text:
+    text = font.render(line, True, (255, 204, 0))
+    screen.blit(text, (text_x, text_y))
+    text_y += 40
+
+instructions = ['                       Инструкции            ',
+                'Управление космолётом - стрелочки',
+                '   Стрельба из орудия - пробел   ',
+                '   Специальная способность - E   ',
+                '  Ультимативная способность - Q  ']
+
+font = pygame.font.Font(None, 24)
+text_x = 100
+text_y = 400
+for line in instructions:
+    text = font.render(line, True, (204, 6, 5))
+    screen.blit(text, (text_x, text_y))
+    text_y += 40
+
+next_text = 'Для того, чтобы начать игру, нажмите любую клавишу'
+text_x = 25
+text_y = 620
+next_text = font.render(next_text, True, (199, 208, 204))
+screen.blit(next_text, (text_x, text_y))
+
+def starting():
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif ev.type == pygame.KEYDOWN or \
+                    ev.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+starting()
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
