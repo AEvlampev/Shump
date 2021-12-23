@@ -10,8 +10,6 @@ FPS = 60
 level_counter = 0
 global_count = 0
 
-delta_y = 0
-
 # Создаем игру и окно
 pygame.init()
 pygame.mixer.init()
@@ -173,7 +171,7 @@ class Ammos(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
-        self.rect.y = random.randrange(delta_y,
+        self.rect.y = random.randrange(230,
                                        HEIGHT - 150 -
                                        self.rect.height)
 
@@ -186,7 +184,7 @@ class Heals(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
-        self.rect.y = random.randrange(delta_y,
+        self.rect.y = random.randrange(230,
                                        HEIGHT - 150 -
                                        self.rect.height)
 
@@ -479,7 +477,6 @@ while running_game:
                 bosses.add(boss)
                 boss.hp += level_counter * 100
                 boss_ap = True
-                delta_y = 230
 
         if seconds_counter % 10 == 0 and boss_ap and flag_enemy_shoot:
             if boss.hp > 0:
@@ -494,7 +491,6 @@ while running_game:
         if boss_ap:
             if boss.hp <= 0:
                 level_counter += 1
-                delta_y = 0
                 running_level = False
 
         # Обновление
@@ -548,6 +544,7 @@ while running_game:
         # Проверка, не ударил ли моб игрока
         hits = pygame.sprite.spritecollide(player, mobs, True)
         if hits:
+            global_count += 100
             player.hp -= 20
 
         if not mobs and not boss_flag:
@@ -559,4 +556,51 @@ while running_game:
     time_to_boss += 10 * level_counter
     time_to_heal += 2 * level_counter
     time_to_ammo += 1 * level_counter
-pygame.quit()
+screen.fill('black')
+
+
+def end_draw():
+    screen.fill('black')
+
+    font = pygame.font.Font(None, 70)
+    game_name = font.render('Конец игры', True, (255, 204, 0))
+    screen.blit(game_name, (100, 50))
+
+    font = pygame.font.Font(None, 24)
+    text = font.render('Счёт', True, (255, 204, 0))
+    screen.blit(text, (80, 200))
+
+    font = pygame.font.Font(None, 24)
+    text = font.render(str(global_count), True, (255, 204, 0))
+    screen.blit(text, (350, 200))
+
+    font = pygame.font.Font(None, 24)
+    text = font.render('Уровней пройдено', True, (255, 204, 0))
+    screen.blit(text, (80, 300))
+
+    font = pygame.font.Font(None, 24)
+    text = font.render(str(level_counter + 1), True, (255, 204, 0))
+    screen.blit(text, (350, 300))
+
+    next_text = 'Для того, чтобы выйти из игры, нажмите пробел'
+    text_x = 50
+    text_y = 620
+    next_text = font.render(next_text, True, (199, 208, 204))
+    screen.blit(next_text, (text_x, text_y))
+
+
+def ending():
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_SPACE:
+                    return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+end_draw()
+ending()
