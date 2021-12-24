@@ -9,6 +9,7 @@ HEIGHT = 700
 FPS = 60
 level_counter = 0
 global_count = 0
+counter_frames = 0
 
 # Создаем игру и окно
 pygame.init()
@@ -373,6 +374,27 @@ def draw():
     screen.blit(text_spec, (text_x, text_y))
 
 
+def animation_boss_death():
+    animation_frames = []
+    w = 200
+    h = 200
+    image = load_image('animation_boss_death.png', -1)
+    image = pygame.transform.scale(image, (1800, 1800))
+    position = (140, 0)
+
+    row = 0
+    # итерация по строкам
+    for j in range(9):
+        # производим итерацию по элементам строки
+        for i in range(9):
+            # добавляем  в список отдельные кадры
+            animation_frames.append(
+                image.subsurface(pygame.Rect(i * w, row, w, h)))
+        # смещаемся на высоту кадра, т.е. переходим на другую строку
+        row += int(h)
+    screen.blit(animation_frames[counter_frames], position)
+
+
 while running_game:
     all_sprites = pygame.sprite.Group()
     mobs = pygame.sprite.Group()
@@ -392,6 +414,7 @@ while running_game:
     boss_flag = False
     boss_ap = False
     flag_enemy_shoot = False
+    animation_end = False
 
     for i in range(8):
         m = Mob()
@@ -490,8 +513,12 @@ while running_game:
                 flag_enemy_shoot = False
         if boss_ap:
             if boss.hp <= 0:
-                level_counter += 1
-                running_level = False
+                counter_frames += 1
+
+        if animation_end:
+            counter_frames = 0
+            level_counter += 1
+            running_level = False
 
         # Обновление
         all_sprites.update()
@@ -539,6 +566,12 @@ while running_game:
         all_sprites.draw(screen)
         players.draw(screen)
         draw()
+        if counter_frames >= 81:
+            animation_end = True
+        else:
+            if boss_ap and boss.hp <= 0:
+                animation_boss_death()
+
         # После отрисовки всего, переворачиваем экран
         pygame.display.flip()
         # Проверка, не ударил ли моб игрока
