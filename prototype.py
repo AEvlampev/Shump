@@ -1,8 +1,12 @@
 import os
 import random
 import sys
-
+import pygame_textinput
+import sqlite3
 import pygame
+
+con = sqlite3.connect('database.db')
+cur = con.cursor()
 
 WIDTH = 480
 HEIGHT = 700
@@ -206,53 +210,114 @@ class Boss(pygame.sprite.Sprite):
             self.kill()
 
 
-screen.fill('black')
+def draw_start():
+    screen.fill('black')
 
-font = pygame.font.Font(None, 70)
-game_name = font.render('Shump!', True, (255, 204, 0))
-screen.blit(game_name, (150, 50))
+    font = pygame.font.Font(None, 70)
+    game_name = font.render('Shump!', True, (255, 204, 0))
+    screen.blit(game_name, (150, 50))
 
-intro_text = ['    В одной далёкой-далёкой галактике идёт война    ',
-              'Вы отправились на фронт в качестве пилота космолёта.',
-              'Сражайтесь с противником до самого конца и победите!']
+    intro_text = ['    В одной далёкой-дал'
+                  'ёкой галактике идёт война    ',
+                  'Вы отправились на фронт в '
+                  'качестве пилота космолёта.',
+                  'Сражайтесь с противником до '
+                  'самого конца и победите!']
 
-font = pygame.font.Font(None, 24)
-text_x = 10
-text_y = 150
-for line in intro_text:
-    text = font.render(line, True, (255, 204, 0))
-    screen.blit(text, (text_x, text_y))
-    text_y += 40
+    font = pygame.font.Font(None, 24)
+    text_x = 10
+    text_y = 150
+    for line in intro_text:
+        text = font.render(line, True, (255, 204, 0))
+        screen.blit(text, (text_x, text_y))
+        text_y += 40
 
-instructions = ['                       Инструкции            ',
-                'Управление космолётом - стрелочки',
-                '   Стрельба из орудия - пробел   ',
-                '   Специальная способность - E   ',
-                '  Ультимативная способность - Q  ']
+    instructions = ['                       Инструкции            ',
+                    'Управление космолётом - стрелочки',
+                    '   Стрельба из орудия - пробел   ',
+                    '   Специальная способность - E   ',
+                    '  Ультимативная способность - Q  ']
 
-font = pygame.font.Font(None, 24)
-text_x = 100
-text_y = 400
-for line in instructions:
-    text = font.render(line, True, (204, 6, 5))
-    screen.blit(text, (text_x, text_y))
-    text_y += 40
+    font = pygame.font.Font(None, 24)
+    text_x = 100
+    text_y = 400
+    for line in instructions:
+        text = font.render(line, True, (204, 6, 5))
+        screen.blit(text, (text_x, text_y))
+        text_y += 40
 
-next_text = 'Для того, чтобы начать игру, нажмите любую клавишу'
-text_x = 25
-text_y = 620
-next_text = font.render(next_text, True, (199, 208, 204))
-screen.blit(next_text, (text_x, text_y))
+    next_text = 'Для того, чтобы начать игру, нажмите пробел'
+    text_x = 50
+    text_y = 620
+    next_text = font.render(next_text, True, (199, 208, 204))
+    screen.blit(next_text, (text_x, text_y))
+
+    next_text = 'Для того, чтобы посмотреть рекорды, нажмите Enter'
+    text_x = 30
+    text_y = 650
+    next_text = font.render(next_text, True, (199, 208, 204))
+    screen.blit(next_text, (text_x, text_y))
+
+
+def draw_records():
+    screen.fill('black')
+
+    font = pygame.font.Font(None, 70)
+    game_name = font.render('Рекорды', True, (255, 204, 0))
+    screen.blit(game_name, (120, 50))
+
+    heroes = cur.execute('select * from '
+                         'heroes order by count desc').fetchmany(5)
+    heroes.insert(0, ('Имя', 'Cчёт'))
+    text_x = 20
+    text_y = 150
+    font = pygame.font.Font(None, 30)
+
+    for hero in heroes:
+        for elem in hero:
+            elem_str = str(elem)
+            text = font.render(elem_str, True, (255, 204, 0))
+            screen.blit(text, (text_x, text_y))
+            text_x += 270
+        text_x = 20
+        text_y += 50
+
+    text = 'Для того, чтобы вернуться на стартовую'
+    text_x = 30
+    text_y = 620
+    next_text = font.render(text, True, (199, 208, 204))
+    screen.blit(next_text, (text_x, text_y))
+
+    text = 'страницу, нажмите пробел'
+    text_x = 100
+    text_y = 650
+    next_text = font.render(text, True, (199, 208, 204))
+    screen.blit(next_text, (text_x, text_y))
+
+    while True:
+        for eve in pygame.event.get():
+            if eve.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif eve.type == pygame.KEYDOWN:
+                if eve.key == pygame.K_SPACE:
+                    return
+        pygame.display.flip()
+        clock.tick(FPS)
+
 
 def starting():
     while True:
+        draw_start()
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif ev.type == pygame.KEYDOWN or \
-                    ev.type == pygame.MOUSEBUTTONDOWN:
-                return
+            elif ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_SPACE:
+                    return
+                if ev.key == pygame.K_RETURN:
+                    draw_records()
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -612,10 +677,21 @@ def end_draw():
     screen.blit(text, (80, 300))
 
     font = pygame.font.Font(None, 24)
-    text = font.render(str(level_counter + 1), True, (255, 204, 0))
+    text = font.render('Герой, как тебя зовут?', True, (255, 204, 0))
+    screen.blit(text, (140, 380))
+
+    font = pygame.font.Font(None, 24)
+    text = font.render('(Введите ваше имя, длиной до 12 символов)',
+                       True, (255, 204, 0))
+    screen.blit(text, (70, 420))
+
+    pygame.draw.rect(screen, (255, 204, 0), [(70, 440), (360, 48)], 1)
+
+    font = pygame.font.Font(None, 24)
+    text = font.render(str(level_counter), True, (255, 204, 0))
     screen.blit(text, (350, 300))
 
-    next_text = 'Для того, чтобы выйти из игры, нажмите пробел'
+    next_text = 'Для того, чтобы выйти из игры, нажмите Enter'
     text_x = 50
     text_y = 620
     next_text = font.render(next_text, True, (199, 208, 204))
@@ -623,17 +699,42 @@ def end_draw():
 
 
 def ending():
+    font = pygame.font.SysFont("Times New Roman", 24)
+    manager = pygame_textinput.TextInputManager(validator=lambda
+        input: len(input) <= 12)
+    textinput = pygame_textinput.TextInputVisualizer(manager=manager,
+                                                     font_object=font)
+    textinput.font_color = (255, 204, 0)
+    textinput.cursor_color = (255, 204, 0)
+    textinput.cursor_blink_interval = 800
     while True:
-        for ev in pygame.event.get():
+        end_draw()
+        events = pygame.event.get()
+        for ev in events:
             if ev.type == pygame.QUIT:
+                if not textinput.value:
+                    name = 'NONAME'
+                else:
+                    name = textinput.value
+                cur.execute(f'INSERT INTO heroes '
+                            f'VALUES ("{name}", {global_count})')
+                con.commit()
                 pygame.quit()
                 sys.exit()
             elif ev.type == pygame.KEYDOWN:
-                if ev.key == pygame.K_SPACE:
+                if ev.key == pygame.K_RETURN:
+                    if not textinput.value:
+                        name = 'NONAME'
+                    else:
+                        name = textinput.value
+                    cur.execute(f'INSERT INTO heroes '
+                                f'VALUES ("{name}", {global_count})')
+                    con.commit()
                     return
+        textinput.update(events)
+        screen.blit(textinput.surface, (150, 450))
         pygame.display.flip()
         clock.tick(FPS)
 
 
-end_draw()
 ending()
