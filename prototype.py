@@ -25,6 +25,7 @@ clock = pygame.time.Clock()
 seconds_counter_event = pygame.USEREVENT + 4
 pygame.time.set_timer(seconds_counter_event, 1000)
 
+
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
 
@@ -246,17 +247,14 @@ def draw_start():
         screen.blit(text, (text_x, text_y))
         text_y += 40
 
-    next_text = 'Для того, чтобы начать игру, нажмите пробел'
     text_x = 50
     text_y = 620
-    next_text = font.render(next_text, True, (199, 208, 204))
-    screen.blit(next_text, (text_x, text_y))
-
-    next_text = 'Для того, чтобы посмотреть рекорды, нажмите Enter'
-    text_x = 30
-    text_y = 650
-    next_text = font.render(next_text, True, (199, 208, 204))
-    screen.blit(next_text, (text_x, text_y))
+    for line in ['Для того, чтобы начать игру, нажмите пробел',
+                 'Для того, чтобы посмотреть рекорды, нажмите Enter']:
+        next_text = font.render(line, True, (199, 208, 204))
+        screen.blit(next_text, (text_x, text_y))
+        text_x -= 20
+        text_y += 30
 
 
 def draw_records():
@@ -282,17 +280,14 @@ def draw_records():
         text_x = 20
         text_y += 50
 
-    text = 'Для того, чтобы вернуться на стартовую'
     text_x = 30
     text_y = 620
-    next_text = font.render(text, True, (199, 208, 204))
-    screen.blit(next_text, (text_x, text_y))
-
-    text = 'страницу, нажмите пробел'
-    text_x = 100
-    text_y = 650
-    next_text = font.render(text, True, (199, 208, 204))
-    screen.blit(next_text, (text_x, text_y))
+    for line in ['Для того, чтобы вернуться на стартовую',
+                 'страницу, нажмите пробел']:
+        next_text = font.render(line, True, (199, 208, 204))
+        screen.blit(next_text, (text_x, text_y))
+        text_x += 70
+        text_y += 30
 
     while True:
         for eve in pygame.event.get():
@@ -349,7 +344,7 @@ time_to_ammo = 10
 
 
 def draw():
-    pygame.draw.rect(screen, 'black', [(0, 600), (WIDTH, HEIGHT)], 0)
+    pygame.draw.rect(screen, 'black', [(0, 600), (WIDTH, HEIGHT)])
 
     font = pygame.font.Font(None, 20)
     text = font.render("Снаряды", True, (255, 204, 0))
@@ -609,7 +604,8 @@ while running_game:
             running_game = False
             running_level = False
 
-        hits = pygame.sprite.groupcollide(bosses, bullets, False, True)
+        hits = pygame.sprite.groupcollide(bosses, bullets, False,
+                                          True)
         if hits:
             boss.hp -= 20
             global_count += 20
@@ -619,7 +615,8 @@ while running_game:
         if hits:
             player.hp -= 20
 
-        hits = pygame.sprite.groupcollide(players, bosses, False, False)
+        hits = pygame.sprite.groupcollide(players, bosses, False,
+                                          False)
         if hits:
             player.hp -= 1
             boss.hp -= 5
